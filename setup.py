@@ -6,7 +6,7 @@ Created on Mar 11, 2018
 import cx_Freeze
 from cx_Freeze import setup, Executable
 import sys
-base = 'Win32GUI' if sys.platform=='win32' else None
+base = 'console' if sys.platform=='win32' else None
 '''buildOptions = dict(packages = [], 
 	excludes = [],
     includes = ["Trainer", "api"],
