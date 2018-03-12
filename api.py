@@ -1,6 +1,8 @@
 import json
-import urllib2
-
+try:
+    import urllib.request as urllib2
+except ImportError:
+    import urllib2
 def reqData(strTag):
     pokeApi = 'http://pokeapi.co/api/v2/' + strTag + '/'
     try:
