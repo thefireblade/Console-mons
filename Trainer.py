@@ -61,14 +61,6 @@ class Trainer(object):
         else:
             self.trainerDat['items'].append(item)
     
-    def viewBag(self):
-        print "\n" 
-        print self.trainerDat['items']
-        
-    def viewBox(self):
-        print "\n"
-        print self.trainerDat['pokeBox']
-        
     def tossItem(self, item):
         for x in self.trainerDat['items']:
             if x["name"] == item["name"]:
