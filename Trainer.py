@@ -13,11 +13,83 @@ Implement ability and attack effects + STATUS
 '''
 from api import reqData, reqMoveData
 import random
-try: items = iteritems
-except NameError: pass
+from math import floor
 try: input = raw_input
 except NameError: pass
-
+#Stats are as follows [HP,ATK,DEF,SPA,SPD,SPE]
+#BaseStat database is given in reverse order
+def calcStats(base, iv, ev, level, nature):
+    hp = 0
+    atk = 1
+    defe = 2
+    spa = 3
+    spd = 4
+    spe = 5
+    stat = [0, 0, 0, 0, 0, 0]
+    for x in range(5): 
+        stat[5-x] = floor((2 * base[x] + iv[5-x] + ev[5-x]) * level / 100 + 5)
+    stat[hp] = floor((2 * base[5] + iv[hp] + ev[hp]) * level / 100 + level + 10)
+    if(nature == "LONELY") :
+        stat[atk] = floor(stat[atk] * 1.1)
+        stat[defe] = floor(stat[defe] * .9)
+    if(nature == "BRAVE") :
+        stat[atk] = floor(stat[atk] * 1.1)
+        stat[spe] = floor(stat[spe] * .9)
+    if(nature == "ADAMANT") :
+        stat[atk] = floor(stat[atk] * 1.1)
+        stat[spa] = floor(stat[spa] * .9)
+    if(nature == "NAUGHTY"):
+        stat[atk] = floor(stat[atk] * 1.1)
+        stat[spd] = floor(stat[spd] * .9)
+    if(nature == "BOLD") :
+        stat[defe] = floor(stat[defe] * 1.1)
+        stat[atk] = floor(stat[atk] * .9)
+    if(nature == "RELAXED") :
+        stat[defe] = floor(stat[defe] * 1.1)
+        stat[spe] = floor(stat[spe] * .9)
+    if(nature == "IMPISH") :
+        stat[defe] = floor(stat[defe] * 1.1)
+        stat[spa] = floor(stat[spa] * .9)
+    if(nature == "LAX") :
+        stat[defe] = floor(stat[defe] * 1.1)
+        stat[spd] = floor(stat[spd] * .9)
+    if(nature == "TIMID") :
+        stat[spe] = floor(stat[spe] * 1.1)
+        stat[atk] = floor(stat[atk] * .9)
+    if(nature == "HASTY") :
+        stat[spe] = floor(stat[spe] * 1.1)
+        stat[defe] = floor(stat[defe] * .9)
+    if(nature == "JOLLY") :
+        stat[spe] = floor(stat[spe] * 1.1)
+        stat[spa] = floor(stat[spa] * .9)
+    if(nature == "NAIVE") :
+        stat[spe] = floor(stat[spe] * 1.1)
+        stat[spd] = floor(stat[spd] * .9)
+    if(nature == "MODEST") :
+        stat[spa] = floor(stat[spa] * 1.1)
+        stat[atk] = floor(stat[atk] * .9)
+    if(nature == "MILD") :
+        stat[spa] = floor(stat[spa] * 1.1)
+        stat[defe] = floor(stat[defe] * .9)
+    if(nature == "QUIET") :
+        stat[spa] = floor(stat[spa] * 1.1)
+        stat[spe] = floor(stat[spe] * .9)
+    if(nature == "RASH") :
+        stat[spa] = floor(stat[spa] * 1.1)
+        stat[spd] = floor(stat[spd] * .9)
+    if(nature == "CALM") :
+        stat[spd] = floor(stat[spd] * 1.1)
+        stat[atk] = floor(stat[atk] * .9)
+    if(nature == "GENTLE") :
+        stat[spd] = floor(stat[spd] * 1.1)
+        stat[defe] = floor(stat[defe] * .9)
+    if(nature == "SASSY") :
+        stat[spd] = floor(stat[spd] * 1.1)
+        stat[spe] = floor(stat[spe] * .9)
+    if(nature == "CAREFUL") :
+        stat[spd] = floor(stat[spd] * 1.1)
+        stat[spa] = floor(stat[spa] * .9)
+    return stat
 class Trainer(object):
     ''' name = ""
     pokeBox = [] #pokeBox Library
@@ -95,6 +167,12 @@ class Trainer(object):
     def getName(self):
         return self.trainerDat['name']
     
+    def getParty(self):
+        return self.trainerDat['party']
+    
+    def getBox(self):
+        return self.trainerDat['pokeBox']
+    
     def printParty(self):
         s = ""
         for x in range(len(self.trainerDat['party'])) :
@@ -115,13 +193,15 @@ class Trainer(object):
 class Pokemon(object):
     
     def __init__(self, data, level):
-        self.pokeDat = {'statBoosters': [1,1,1,1,1,1], 'stats': [10,10,10,10,10,10], 'Health': 100, 'moveLimit': 4, 'exp': 1000, 'owner': "", 'shiny': False, 'level' : 1, 'data' : '', 'nature' : '', 'nickName' : '', 'ev' : [0,0,0,0,0,0], 'iv' : [1,1,1,1,1,1], 'ability' : '', 'gender' : 'genderless', 'moves': [] }
+        self.pokeDat = {'base_stats': [0,0,0,0,0,0],'statBoosters': [1,1,1,1,1,1], 'stats': [10,10,10,10,10,10], 'Health': 100, 'moveLimit': 4, 'exp': 1000, 'owner': "", 'shiny': False, 'level' : 1, 'data' : '', 'nature' : '', 'nickName' : '', 'ev' : [0,0,0,0,0,0], 'iv' : [1,1,1,1,1,1], 'ability' : '', 'gender' : 'genderless', 'moves': [] }
         if 999 <= random.randint(0,1000):
             self.pokeDat['shiny'] = True
         self.pokeDat['data'] = data
         self.pokeDat['data']["moves"] = sorted(data["moves"], key = lambda k: k["version_group_details"][0]["level_learned_at"]) #Sorting the moves by level
         self.pokeDat['nature'] = reqData("nature/" + str(random.randint(1,20)))
         self.pokeDat['level'] = level
+        for x in range(6):
+            self.pokeDat['base_stats'][x] = data["stats"][x]["base_stat"]
         self.pokeDat['exp'] = level * 1000
         self.pokeDat['nickName'] = data['name'].upper()
         if 90 >= random.randint(0,100):
@@ -138,13 +218,17 @@ class Pokemon(object):
                 self.pokeDat['ability'] = reqMoveData(data["abilities"][random.randint(1,2)]["ability"]["url"])
             else:
                 self.pokeDat['ability'] = reqMoveData(data["abilities"][1]["ability"]["url"])
-
+        self.pokeDat['stats'] = calcStats(self.pokeDat['base_stats'], self.pokeDat['iv'], self.pokeDat['ev'], self.pokeDat['level'], self.pokeDat['nature']["name"])
+        
     def increEv(self, index, amt): 
         if not self.pokeDat['ev'][index] >= 252:
             self.pokeDat['ev'][index] += amt
     
     def setOwner(self, name):
         self.pokeDat['owner'] = name
+    
+    def getStat(self):
+        return self.pokeDat['stats']
     
     def getStatBoosters(self):
         return self.pokeDat['statBoosters']
@@ -207,7 +291,20 @@ class Pokemon(object):
             self.pokeDat['exp'] += amt
             while (self.pokeDat['exp'] - self.pokeDat['level'] * 1000) >= 1000 :
                 self.levelUp()
-        
+    def getAdvancedDetails(self):
+        y = self.pokeDat
+        s = self.toString()
+        s += "\nStats: "
+        s += "HP:" + str(y['stats'][0]) + "\tATK:" + str(y['stats'][1]) + "\tDEF:" + str(y['stats'][2])  
+        s += "\tSPA:" + str(y['stats'][3]) + "\tSPD:" + str(y['stats'][4]) + "\tSPE:" + str(y['stats'][5])
+        s += "\nIVs: "
+        s += "HP:" + str(y['iv'][0]) + "\tATK:" + str(y['iv'][1]) + "\tDEF:" + str(y['iv'][2]) 
+        s += "\tSPA:" + str(y['iv'][3]) + "\tSPD:" + str(y['iv'][4]) + "\tSPE:" + str(y['iv'][5])
+        s += "\nEVs: "
+        s += "HP:" + str(y['ev'][0]) + "\tATK:" + str(y['ev'][1]) + "\tDEF:" + str(y['ev'][2]) 
+        s += "\tSPA:" + str(y['ev'][3]) + "\tSPD:" + str(y['ev'][4]) + "\tSPE:" + str(y['ev'][5])
+        return s;
+    
     def getData(self):
         return self.pokeDat
     def setData(self, data):

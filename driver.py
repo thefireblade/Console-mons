@@ -36,7 +36,17 @@ def continueJourney(trainer):
             print("\nThey told you to get a job. You did and earned $500.")
             trainer.earn(500)
         if(option == 5) :
-            print("\nThe Poke Center is currently not available. Contact Jason for the next update")
+            stay = True
+            while(stay) :
+                print("\nThe Poke Center is currently not completed. Contact Jason for the next update")
+                option = int(input("\nWhat do you want to do?\n(1)View Party\n(2)Leave"))
+                if(option == 1) :
+                    for x in range(len(trainer.getParty())):
+                        print(trainer.getParty()[x].getAdvancedDetails())
+                if(option == 2) :
+                    print("\nYou decided to leave.")
+                    stay = False;
+            
         if(option == 6) :
             print("\nPvP is currently not available. Contact Jason for the next update")
         if(option == 7) :
