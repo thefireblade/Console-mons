@@ -8,12 +8,15 @@ Implement Healing
 Implement PvP
 Implement Gender + Breeding
 Implement GYMS + STORY
+Implement ability and attack effects + STATUS
 @author: Jason Huang SBU Class of 2021
 '''
 from api import reqData, reqMoveData
 import random
-import json
-
+try: items = iteritems
+except NameError: pass
+try: input = raw_input
+except NameError: pass
 
 class Trainer(object):
     ''' name = ""
@@ -67,6 +70,7 @@ class Trainer(object):
                 self.items.remove(item)
             else:
                 print('\nThe item you are trying to toss does not exist')
+    
     #Mutators
     
     def addToLoc(self, num):    
@@ -111,14 +115,14 @@ class Trainer(object):
 class Pokemon(object):
     
     def __init__(self, data, level):
-        self.pokeDat = {'Health': 100, 'moveLimit': 4, 'exp': 1000, 'owner': "", 'shiny': False, 'level' : 1, 'data' : '', 'nature' : '', 'nickName' : '', 'ev' : [0,0,0,0,0,0], 'iv' : [1,1,1,1,1,1], 'ability' : '', 'gender' : 'genderless', 'moves': [{}] }
+        self.pokeDat = {'statBoosters': [1,1,1,1,1,1], 'stats': [10,10,10,10,10,10], 'Health': 100, 'moveLimit': 4, 'exp': 1000, 'owner': "", 'shiny': False, 'level' : 1, 'data' : '', 'nature' : '', 'nickName' : '', 'ev' : [0,0,0,0,0,0], 'iv' : [1,1,1,1,1,1], 'ability' : '', 'gender' : 'genderless', 'moves': [] }
         if 999 <= random.randint(0,1000):
             self.pokeDat['shiny'] = True
         self.pokeDat['data'] = data
+        self.pokeDat['data']["moves"] = sorted(data["moves"], key = lambda k: k["version_group_details"][0]["level_learned_at"]) #Sorting the moves by level
         self.pokeDat['nature'] = reqData("nature/" + str(random.randint(1,20)))
         self.pokeDat['level'] = level
         self.pokeDat['exp'] = level * 1000
-            
         self.pokeDat['nickName'] = data['name'].upper()
         if 90 >= random.randint(0,100):
             for x in range(0,6):
@@ -142,6 +146,12 @@ class Pokemon(object):
     def setOwner(self, name):
         self.pokeDat['owner'] = name
     
+    def getStatBoosters(self):
+        return self.pokeDat['statBoosters']
+    
+    def setStatBoosters(self, array):
+        self.pokeDat['statBoosters'] = array
+    
     def levelUp(self):
         self.pokeDat['level'] += 1
         for x in range(0, len(self.pokeDat['data']["moves"])):
@@ -162,19 +172,36 @@ class Pokemon(object):
                     if truth == "Y":
                         if len(self.pokeDat['moves']) >= self.pokeDat['moveLimit']:
                             index = input("\nWhich existing move do you want to replace?:")
-                            print(self.pokeDat["moves"])
+                            for x in range(self.pokeDat['moveLimit']):
+                                print("\n(" + str(x) + ")" + self.pokeDat['moves'][x].toString())
                             while index < 1 or index > len(self.pokeDat['moves'] - 1) :
                                 print("\nChoose a valid response.")
                                 index = input(self.pokeDat["moves"])
-                            self.pokeDat['moves'][index - 1] = reqMoveData(y["move"]["url"])
+                            self.pokeDat['moves'][index - 1] = Moves(reqMoveData(y["move"]["url"]))
                         else: 
-                            self.pokeDat['moves'].append(reqMoveData(y["move"]["url"]))
+                            self.pokeDat['moves'].append(Moves(reqMoveData(y["move"]["url"])))
                 if y["version_group_details"][0]["level_learned_at"] > self.pokeDat['level'] :
                     break
         
     def getPokemon(self):
         return self.pokeDat['data']
+
+    def getMoves(self):
+        index = []
+        y = self.pokeDat['data']["moves"]
+        for x in range(len(y)) :
+            if y[x]["version_group_details"][0]["move_learn_method"]["name"] == "level-up" :
+                if y[x]["version_group_details"][0]["level_learned_at"] > self.pokeDat['level'] :
+                    break;
+                index.append(x)
+         
     
+        while not (len(self.pokeDat['moves']) >= self.pokeDat['moveLimit'] or len(index) == 0) :
+            self.pokeDat['moves'].append(Moves(reqMoveData(y[index.pop()]["move"]["url"]))) 
+            
+    def increMoveLimit(self,amt):
+        self.pokeDat['moveLimit'] += amt
+        
     def increExp(self, amt):
         if not self.pokeDat['exp'] >= 100000 :
             self.pokeDat['exp'] += amt
@@ -191,12 +218,41 @@ class Pokemon(object):
         s += "\nLevel:" + str(self.pokeDat['level'])
         s += "\nNature:" + str(self.pokeDat['nature']["name"]).upper()
         s += "\nAbility:" + str(self.pokeDat['ability']["name"]).upper()
+        s += "\nMoves:"
+        for x in range(len(self.pokeDat['moves'])):
+            s += "\n(" + str(x+1) + ")" + self.pokeDat['moves'][x].toString()
         return s
     
 class Moves(object):
-    movedat = {'data' : {}, 'pp': 0, 'name': ""}
-    def __init__(self, data):
-        self.movedat['name'] = data["name"]
-        self.movedat['data'] = data
-        self.movedat['pp'] == data["pp"]
     
+    def __init__(self, data):
+        self.movedat = {'effect' : "" , 'priority':0, 'critChance': 10, 'data' : {}, 'pp': 0, 'name': "", 'power': 0, 'accuracy' : 0, 'effectChance' : 0}
+        self.movedat['name'] = data["name"].upper()
+        self.movedat['data'] = data
+        self.movedat['pp'] = data["pp"]
+        self.movedat['power'] = data["power"]
+        self.movedat['accuracy'] = data["accuracy"]
+        self.movedat['effectChance'] = data["effect_chance"]
+        self.movedat['effect'] = data["effect_entries"][0]["short_effect"] #When implementing battle, use reg effect
+        self.movedat['priority'] = data["priority"]
+    
+    def setCritChance(self, value) :
+        self.movedat['critChance'] = value
+        
+    def decreasePP(self, amt):
+        self.movedat['pp'] -= amt
+    
+    def getPower(self):
+        return self.movedat['power']
+    
+    def getAccuracy(self):
+        return self.movedat['accuracy']
+    
+    def getPriority(self):
+        return self.movedat['priority']
+    
+    def toString(self):
+        s = "\n" + self.movedat['name'] + "\tAccuracy:" + str(self.movedat['accuracy']) 
+        s += "\tPP:" + str(self.movedat['pp']) + "\tPower:" + str(self.movedat['power'])
+        s += "\n" + self.movedat['effect'] +"\n"
+        return s

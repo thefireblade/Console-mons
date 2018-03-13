@@ -25,6 +25,7 @@ def continueJourney(trainer):
         if(option == 1):
             pokie = Pokemon(getPoke(random.randint(1,802)), random.randint(1,100))
             print("\nA random pokemon spawned: " + pokie.toString())
+            pokie.getMoves()
             print("\nYou caught it!")
             trainer.catchPoke(pokie)
         if(option == 2) :
@@ -49,6 +50,7 @@ def startJourney():
     choice = int(input("\n" + str(person) +", I'll hand over a starter to you. Choose between Bulbasaur, Squirtle, and Charmander (1,4,7)"))
     starter = Pokemon(getPoke(choice), 5)
     print("\n" + starter.toString() + "\nhas been added to your team!")
+    starter.getMoves()
     user = Trainer(str(person))
     starter.setOwner(user.getName())
     user.catchPoke(starter)
@@ -67,7 +69,7 @@ try:
         continueJourney(trainer)
     else:
         startJourney()
-except:
+except :
     printBreak()
     print("\nStarting a new adventure!")
     startJourney()
