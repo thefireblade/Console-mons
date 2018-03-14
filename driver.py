@@ -41,7 +41,7 @@ def continueJourney(trainer):
                     pokie = Pokemon(getPoke(random.randint(1,802)), random.randint(trainer.getParty()[alive].getLevel() - 4, trainer.getParty()[alive].getLevel() + 1))
                     print("\nA random pokemon appeared: " + pokie.toString() + "\n")
                     pokie.obtainMoves()
-                    print "\n" + trainer.getParty()[alive].getName() + " was sent out!"
+                    print("\n" + trainer.getParty()[alive].getName() + " was sent out!")
                     current = alive
                     battle = True #TO BE CHANGED LATER, JUST HERE FOR TESTING
                     while(battle):
@@ -86,7 +86,7 @@ def continueJourney(trainer):
                                                     print("\nInvalid choice, the pokemon selected is fainted and can no longer battle.")
                                                 else:
                                                     current = option - 1
-                                                    print "\n" + trainer.getParty()[current].getName() + " was sent out!"
+                                                    print("\n" + trainer.getParty()[current].getName() + " was sent out!")
                                         print(pokie.toString())
                                     else:
                                         print("\n"+ pokie.getMove(randNum).getName() +" has been used.")
@@ -114,7 +114,7 @@ def continueJourney(trainer):
                                                         print("\nInvalid choice, the pokemon selected is fainted and can no longer battle.")
                                                     else:
                                                         current = option - 1
-                                                        print "\n" + trainer.getParty()[current].getName() + " was sent out!"
+                                                        print("\n" + trainer.getParty()[current].getName() + " was sent out!")
                                         print("\n"+ trainer.getParty()[current].getMove(option).getName() +" has been used.")
                                         trainer.getParty()[current].getMove(option).decreasePP(1)
                                         calcDamageRecieved(trainer.getParty()[current], pokie, trainer.getParty()[current].getMove(option))
@@ -140,7 +140,7 @@ def continueJourney(trainer):
                                         print("\nInvalid choice, the pokemon selected is fainted and can no longer battle.")
                                     else:
                                         current = option - 1
-                                        print "\n" + trainer.getParty()[current].getName() + " was sent out!"
+                                        print("\n" + trainer.getParty()[current].getName() + " was sent out!")
                             elif(option == 4):
                                 print("You ran away! (Always success in current build)")
                                 battle = False
