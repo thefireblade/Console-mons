@@ -11,7 +11,6 @@ def reqData(strTag):
         data = json.load(json_object)
     except:
         print('Something went wrong when obtaining data')
-    
     return data
 def reqMoveData(strTag):
     pokeApi = strTag
